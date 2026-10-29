@@ -81,13 +81,18 @@ surface. Either can be wrapped over the same internal loop.
 ## What `TraceExport` becomes
 
 A plugin that registers the `TraceExport` command, calls the iteration API, and formats each step.
-Formats:
+All four formats below are already implemented in the reference `src/` (today against x64dbg
+internals); on a public iteration API they move into the plugin unchanged:
 
 - **json** — one object per line (greppable), hex strings for 64-bit-safe values;
 - **csv** — one row per instruction, memory accesses packed into one column;
-- **tenet** — the [Tenet](https://github.com/gaasedelen/tenet) text trace format, so the output
-  drops straight into Tenet / [frinet](https://github.com/synacktiv/frinet). Register and memory
-  deltas map directly from each step.
+- **tenet** — the [Tenet](https://github.com/gaasedelen/tenet) text trace format (state before each
+  instruction), loads directly in the Tenet IDA plugin;
+- **frinet** — the [Frinet](https://github.com/synacktiv/frinet) variant (a `slide=` header, then
+  IP + post-instruction effects per line; 64-bit only), indexed by frinet and opened in IDA.
+
+Register and memory deltas map directly from each step, which is why the Tenet/Frinet targets are
+the ones that answer the "only trivial traces" concern: frinet indexes to ~2B instructions.
 
 Disassembly: the plugin can use its own Zydis (the format stores raw opcode bytes), or the API can
 expose the already-initialized wrapper — open question for review.
